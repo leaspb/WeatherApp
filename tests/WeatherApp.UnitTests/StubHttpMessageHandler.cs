@@ -1,14 +1,16 @@
 namespace WeatherApp.UnitTests;
 
+using System.Collections.Concurrent;
 using System.Net;
 using System.Text;
 
 public sealed class StubHttpMessageHandler : HttpMessageHandler
 {
-    private readonly Queue<HttpStatusCode> transientStatusCodes = new();
-    private readonly Queue<HttpStatusCode> statusCodes = new();
+    private readonly ConcurrentQueue<HttpStatusCode> transientStatusCodes = new();
+    private readonly ConcurrentQueue<HttpStatusCode> statusCodes = new();
+    private int requestCount;
 
-    public int RequestCount { get; private set; }
+    public int RequestCount => requestCount;
 
     public TimeSpan ResponseDelay { get; set; }
 
@@ -26,21 +28,21 @@ public sealed class StubHttpMessageHandler : HttpMessageHandler
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        RequestCount++;
+        Interlocked.Increment(ref requestCount);
 
         if (ResponseDelay > TimeSpan.Zero)
         {
             await Task.Delay(ResponseDelay, cancellationToken);
         }
 
-        if (transientStatusCodes.Count > 0)
+        if (transientStatusCodes.TryDequeue(out var transientStatusCode))
         {
-            return new HttpResponseMessage(transientStatusCodes.Dequeue());
+            return new HttpResponseMessage(transientStatusCode);
         }
 
-        if (statusCodes.Count > 0)
+        if (statusCodes.TryDequeue(out var statusCode))
         {
-            return new HttpResponseMessage(statusCodes.Dequeue());
+            return new HttpResponseMessage(statusCode);
         }
 
         var content = request.RequestUri?.AbsolutePath switch

@@ -18,10 +18,18 @@ public static class ServiceCollectionExtensions
     {
         services.AddMemoryCache();
         services.AddSingleton<WeatherApiCircuitBreaker>();
+        services.AddSingleton<WeatherCacheRefreshCoordinator>();
 
         services
             .AddOptions<WeatherApiOptions>()
-            .Bind(configuration.GetSection(WeatherApiOptions.SectionName));
+            .Bind(configuration.GetSection(WeatherApiOptions.SectionName))
+            .Validate(o => !string.IsNullOrWhiteSpace(o.ApiKey), "Weather API key is not configured.")
+            .Validate(o => Uri.TryCreate(o.BaseUrl, UriKind.Absolute, out _), "Weather API base URL is invalid.")
+            .Validate(o => o.RequestTimeoutSeconds > 0, "Weather API timeout must be positive.")
+            .Validate(o => o.CacheDurationMinutes > 0, "Weather API cache duration must be positive.")
+            .Validate(o => o.CircuitBreakerFailureThreshold > 0, "Weather API circuit breaker threshold must be positive.")
+            .Validate(o => o.CircuitBreakerDurationSeconds > 0, "Weather API circuit breaker duration must be positive.")
+            .ValidateOnStart();
 
         services.AddHttpClient(
             WeatherApiHttpClientName,
@@ -37,12 +45,14 @@ public static class ServiceCollectionExtensions
                 var httpClientFactory = serviceProvider.GetRequiredService<IHttpClientFactory>();
                 var memoryCache = serviceProvider.GetRequiredService<IMemoryCache>();
                 var circuitBreaker = serviceProvider.GetRequiredService<WeatherApiCircuitBreaker>();
+                var cacheRefreshCoordinator = serviceProvider.GetRequiredService<WeatherCacheRefreshCoordinator>();
                 var options = serviceProvider.GetRequiredService<IOptions<WeatherApiOptions>>().Value;
 
                 return new WeatherService(
                     httpClientFactory.CreateClient(WeatherApiHttpClientName),
                     memoryCache,
                     circuitBreaker,
+                    cacheRefreshCoordinator,
                     options);
             });
 

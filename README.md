@@ -1,4 +1,4 @@
-# WeatherApp2
+# WeatherApp
 
 Погодное веб-приложение с frontend на React + TypeScript и backend на .NET 9 Minimal API.
 

@@ -1,7 +1,7 @@
 namespace WeatherApp.Api.Contracts;
 
 public sealed record HourlyForecastResponse(
-    DateTime Time,
+    DateTimeOffset Time,
     decimal TemperatureC,
     string ConditionText,
     string IconUrl);

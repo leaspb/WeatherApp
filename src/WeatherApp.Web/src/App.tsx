@@ -54,16 +54,12 @@ function App() {
     };
   }, []);
 
-  const handleRetry = (): void => {
-    startLoad();
-  };
-
   if (state === "loading" || state === "idle") {
     return <LoadingView />;
   }
 
   if (state === "error" || weather === null) {
-    return <ErrorView message={errorMessage} onRetry={handleRetry} />;
+    return <ErrorView message={errorMessage} onRetry={startLoad} />;
   }
 
   return (
@@ -71,7 +67,7 @@ function App() {
       <div className="ambient ambient-left" />
       <div className="ambient ambient-right" />
       <main className="layout">
-        <CurrentWeatherHero onRefresh={handleRetry} weather={weather} />
+        <CurrentWeatherHero onRefresh={startLoad} weather={weather} />
         <HourlyForecastList items={weather.hourly} />
         <DailyForecastList items={weather.daily} />
       </main>

@@ -13,21 +13,20 @@ public sealed class WeatherService(
     HttpClient httpClient,
     IMemoryCache memoryCache,
     WeatherApiCircuitBreaker circuitBreaker,
+    WeatherCacheRefreshCoordinator cacheRefreshCoordinator,
     WeatherApiOptions options) : IWeatherService
 {
     private const string WeatherCacheKey = "weather:moscow";
-    private readonly SemaphoreSlim cacheRefreshLock = new(1, 1);
+    private static readonly TimeSpan MoscowUtcOffset = TimeSpan.FromHours(3);
 
     public async Task<WeatherResponse> GetWeatherAsync(CancellationToken cancellationToken)
     {
-        ValidateOptions(options);
-
         if (memoryCache.TryGetValue(WeatherCacheKey, out WeatherResponse? cachedWeather) && cachedWeather is not null)
         {
             return cachedWeather;
         }
 
-        await cacheRefreshLock.WaitAsync(cancellationToken);
+        await cacheRefreshCoordinator.RefreshLock.WaitAsync(cancellationToken);
 
         try
         {
@@ -70,7 +69,7 @@ public sealed class WeatherService(
         }
         finally
         {
-            cacheRefreshLock.Release();
+            cacheRefreshCoordinator.RefreshLock.Release();
         }
     }
 
@@ -111,17 +110,19 @@ public sealed class WeatherService(
             throw new TimeoutException("Weather API request timed out.", exception);
         }
 
-        if (IsTransientStatusCode(response.StatusCode))
+        using (response)
         {
-            response.Dispose();
-            throw new HttpRequestException(
-                $"Weather API returned transient status code {(int)response.StatusCode}.");
+            if (IsTransientStatusCode(response.StatusCode))
+            {
+                throw new HttpRequestException(
+                    $"Weather API returned transient status code {(int)response.StatusCode}.");
+            }
+
+            response.EnsureSuccessStatusCode();
+
+            return await response.Content.ReadFromJsonAsync<JsonDocument>(cancellationToken)
+                ?? throw new JsonException("Weather API returned an empty payload.");
         }
-
-        response.EnsureSuccessStatusCode();
-
-        return await response.Content.ReadFromJsonAsync<JsonDocument>(cancellationToken)
-            ?? throw new JsonException("Weather API returned an empty payload.");
     }
 
     private static WeatherResponse MapWeatherResponse(
@@ -140,7 +141,7 @@ public sealed class WeatherService(
                 .GetProperty("forecast")
                 .GetProperty("forecastday");
 
-            var localTime = ParseLocalTime(location.GetProperty("localtime").GetString());
+            var localTime = ParseDateTimeOffset(location.GetProperty("localtime").GetString());
 
             return new WeatherResponse(
                 new WeatherLocationResponse(
@@ -157,9 +158,10 @@ public sealed class WeatherService(
 
     private static IReadOnlyList<HourlyForecastResponse> MapHourly(
         JsonElement forecastDays,
-        DateTime localTime)
+        DateTimeOffset localTime)
     {
-        var nextDay = localTime.Date.AddDays(1);
+        var today = DateOnly.FromDateTime(localTime.DateTime);
+        var tomorrow = today.AddDays(1);
         var hourly = new List<HourlyForecastResponse>();
 
         foreach (var forecastDay in forecastDays.EnumerateArray())
@@ -169,16 +171,17 @@ public sealed class WeatherService(
                 "yyyy-MM-dd",
                 CultureInfo.InvariantCulture);
 
-            if (date.ToDateTime(TimeOnly.MinValue) != localTime.Date && date.ToDateTime(TimeOnly.MinValue) != nextDay)
+            if (date != today && date != tomorrow)
             {
                 continue;
             }
 
             foreach (var hour in forecastDay.GetProperty("hour").EnumerateArray())
             {
-                var hourTime = ParseDateTime(hour.GetProperty("time").GetString());
-                var isRemainingHourInCurrentDay = hourTime.Date == localTime.Date && hourTime >= localTime;
-                var isHourInNextDay = hourTime.Date == nextDay;
+                var hourTime = ParseDateTimeOffset(hour.GetProperty("time").GetString());
+                var hourDate = DateOnly.FromDateTime(hourTime.DateTime);
+                var isRemainingHourInCurrentDay = hourDate == today && hourTime >= localTime;
+                var isHourInNextDay = hourDate == tomorrow;
 
                 if (!isRemainingHourInCurrentDay && !isHourInNextDay)
                 {
@@ -228,34 +231,6 @@ public sealed class WeatherService(
         FormattableString.Invariant(
             $"forecast.json?key={weatherApiOptions.ApiKey}&q={weatherApiOptions.Latitude},{weatherApiOptions.Longitude}&days=3");
 
-    private static void ValidateOptions(WeatherApiOptions weatherApiOptions)
-    {
-        if (string.IsNullOrWhiteSpace(weatherApiOptions.ApiKey))
-        {
-            throw new InvalidOperationException("Weather API key is not configured.");
-        }
-
-        if (!Uri.TryCreate(weatherApiOptions.BaseUrl, UriKind.Absolute, out _))
-        {
-            throw new InvalidOperationException("Weather API base URL is invalid.");
-        }
-
-        if (weatherApiOptions.RequestTimeoutSeconds <= 0)
-        {
-            throw new InvalidOperationException("Weather API timeout must be positive.");
-        }
-
-        if (weatherApiOptions.CacheDurationMinutes <= 0)
-        {
-            throw new InvalidOperationException("Weather API cache duration must be positive.");
-        }
-
-        if (weatherApiOptions.CircuitBreakerFailureThreshold <= 0)
-        {
-            throw new InvalidOperationException("Weather API circuit breaker threshold must be positive.");
-        }
-    }
-
     private static string NormalizeIconUrl(string? iconUrl)
     {
         if (string.IsNullOrWhiteSpace(iconUrl))
@@ -286,12 +261,12 @@ public sealed class WeatherService(
         || statusCode == HttpStatusCode.TooManyRequests
         || (int)statusCode >= 500;
 
-    private static DateTime ParseDateTime(string? value) =>
-        DateTime.ParseExact(
-            value ?? string.Empty,
-            "yyyy-MM-dd HH:mm",
-            CultureInfo.InvariantCulture,
-            DateTimeStyles.None);
-
-    private static DateTime ParseLocalTime(string? value) => ParseDateTime(value);
+    private static DateTimeOffset ParseDateTimeOffset(string? value) =>
+        new(
+            DateTime.ParseExact(
+                value ?? string.Empty,
+                "yyyy-MM-dd HH:mm",
+                CultureInfo.InvariantCulture,
+                DateTimeStyles.None),
+            MoscowUtcOffset);
 }
