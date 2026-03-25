@@ -1,0 +1,354 @@
+:root {
+  font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  color: #172033;
+  background:
+    radial-gradient(circle at top left, rgba(253, 200, 126, 0.5), transparent 30%),
+    radial-gradient(circle at 80% 10%, rgba(121, 179, 255, 0.45), transparent 28%),
+    linear-gradient(160deg, #eef4ff 0%, #fdf8ef 48%, #edf5f4 100%);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+  min-height: 100vh;
+}
+
+button {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.ambient {
+  position: absolute;
+  border-radius: 999px;
+  filter: blur(28px);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.ambient-left {
+  top: -6rem;
+  left: -3rem;
+  width: 18rem;
+  height: 18rem;
+  background: rgba(255, 188, 118, 0.45);
+}
+
+.ambient-right {
+  top: 8rem;
+  right: -4rem;
+  width: 20rem;
+  height: 20rem;
+  background: rgba(97, 168, 255, 0.28);
+}
+
+.layout {
+  position: relative;
+  z-index: 1;
+  max-width: 1240px;
+  margin: 0 auto;
+  padding: 2rem 1.25rem 4rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.hero,
+.panel {
+  position: relative;
+  border: 1px solid rgba(23, 32, 51, 0.08);
+  background: rgba(255, 255, 255, 0.66);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 22px 55px rgba(24, 38, 76, 0.08);
+}
+
+.hero {
+  min-height: 21rem;
+  padding: 1.5rem;
+  border-radius: 2rem;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  background:
+    linear-gradient(145deg, rgba(255, 255, 255, 0.78), rgba(239, 247, 255, 0.64)),
+    linear-gradient(90deg, rgba(245, 202, 135, 0.22), transparent 40%);
+}
+
+.hero-copy-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.hero h1 {
+  margin: 0;
+  font-size: clamp(3rem, 8vw, 5.8rem);
+  line-height: 0.95;
+  letter-spacing: -0.06em;
+}
+
+.eyebrow,
+.panel-eyebrow {
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.76rem;
+  color: #6f7a90;
+}
+
+.hero-copy {
+  margin: 0;
+  max-width: 38rem;
+  color: #4e5970;
+  font-size: 1.05rem;
+}
+
+.hero-metrics {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 1rem 1.4rem;
+  margin-top: auto;
+}
+
+.hero-temperature {
+  font-family: "Avenir Next Condensed", "Arial Narrow", "Segoe UI", sans-serif;
+  font-size: clamp(4rem, 10vw, 7rem);
+  line-height: 0.9;
+  letter-spacing: -0.08em;
+  color: #0d2044;
+}
+
+.hero-condition-wrap {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.74);
+}
+
+.hero-icon {
+  width: 3.5rem;
+  height: 3.5rem;
+}
+
+.hero-condition {
+  font-size: 1rem;
+  color: #22304d;
+}
+
+.ghost-button,
+.retry-button {
+  align-self: flex-start;
+  border: none;
+  border-radius: 999px;
+  padding: 0.85rem 1.1rem;
+  cursor: pointer;
+  transition:
+    transform 180ms ease,
+    box-shadow 180ms ease,
+    background-color 180ms ease;
+}
+
+.ghost-button {
+  background: rgba(23, 32, 51, 0.08);
+  color: #16213a;
+}
+
+.retry-button {
+  background: #172033;
+  color: #f7f9fc;
+  box-shadow: 0 16px 24px rgba(23, 32, 51, 0.18);
+}
+
+.ghost-button:hover,
+.retry-button:hover {
+  transform: translateY(-1px);
+}
+
+.panel {
+  padding: 1.2rem;
+  border-radius: 1.7rem;
+}
+
+.panel-header {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  margin-bottom: 1rem;
+}
+
+.panel-header h2 {
+  margin: 0;
+  font-size: 1.55rem;
+  color: #16213a;
+}
+
+.hourly-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+  gap: 0.9rem;
+}
+
+.hour-card {
+  border-radius: 1.4rem;
+  padding: 0.95rem 0.8rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.82), rgba(237, 245, 255, 0.68));
+  border: 1px solid rgba(28, 43, 77, 0.07);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.45rem;
+  text-align: center;
+}
+
+.hour-time,
+.day-label {
+  color: #44506b;
+  font-size: 0.95rem;
+}
+
+.hour-temperature,
+.day-range {
+  color: #101b32;
+}
+
+.hour-condition,
+.day-condition {
+  color: #66728a;
+  font-size: 0.9rem;
+}
+
+.weather-icon {
+  width: 2.5rem;
+  height: 2.5rem;
+}
+
+.daily-list {
+  display: grid;
+  gap: 0.85rem;
+}
+
+.day-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.1rem;
+  border-radius: 1.3rem;
+  background: rgba(255, 255, 255, 0.72);
+  border: 1px solid rgba(28, 43, 77, 0.06);
+}
+
+.day-main,
+.day-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+}
+
+.day-main {
+  flex-wrap: wrap;
+}
+
+.hero-loading,
+.hero-error {
+  align-items: flex-start;
+}
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(150, 166, 197, 0.18);
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+  animation: shimmer 1.6s infinite;
+}
+
+.skeleton-pill {
+  width: 9rem;
+  height: 1rem;
+}
+
+.skeleton-title {
+  width: min(24rem, 78%);
+  height: 4.7rem;
+  border-radius: 1.2rem;
+}
+
+.skeleton-copy {
+  width: min(26rem, 82%);
+  height: 1.15rem;
+}
+
+.skeleton-copy.short {
+  width: min(18rem, 58%);
+}
+
+.skeleton-subtitle {
+  width: 12rem;
+  height: 1.1rem;
+}
+
+.skeleton-mini {
+  width: 3rem;
+  height: 0.9rem;
+}
+
+.skeleton-mini.icon {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 999px;
+}
+
+.skeleton-mini.short {
+  width: 2.1rem;
+}
+
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@media (max-width: 900px) {
+  .hero {
+    flex-direction: column;
+  }
+
+  .ghost-button,
+  .retry-button {
+    align-self: stretch;
+  }
+
+  .day-row {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
