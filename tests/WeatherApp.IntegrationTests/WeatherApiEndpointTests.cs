@@ -2,21 +2,21 @@
 
 using System.Net;
 using System.Net.Http.Json;
-using WeatherApp.Api.Contracts;
+using Api.Contracts;
 
 public sealed class WeatherApiEndpointTests : IClassFixture<WeatherAppApiFactory>
 {
-    private readonly WeatherAppApiFactory factory;
+    private readonly WeatherAppApiFactory _factory;
 
     public WeatherApiEndpointTests(WeatherAppApiFactory factory)
     {
-        this.factory = factory;
+        this._factory = factory;
     }
 
     [Fact]
     public async Task GetHealth_ReturnsOk()
     {
-        using var client = factory.CreateClient();
+        using var client = _factory.CreateClient();
 
         var response = await client.GetAsync("/api/health");
 
@@ -26,7 +26,7 @@ public sealed class WeatherApiEndpointTests : IClassFixture<WeatherAppApiFactory
     [Fact]
     public async Task GetWeather_ReturnsNormalizedPayload()
     {
-        using var client = factory.CreateClient();
+        using var client = _factory.CreateClient();
 
         var response = await client.GetAsync("/api/weather");
         var payload = await response.Content.ReadFromJsonAsync<WeatherResponse>();

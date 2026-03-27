@@ -6,41 +6,41 @@ using System.Text;
 
 public sealed class StubHttpMessageHandler : HttpMessageHandler
 {
-    private readonly ConcurrentQueue<HttpStatusCode> transientStatusCodes = new();
-    private readonly ConcurrentQueue<HttpStatusCode> statusCodes = new();
-    private int requestCount;
+    private readonly ConcurrentQueue<HttpStatusCode> _transientStatusCodes = new();
+    private readonly ConcurrentQueue<HttpStatusCode> _statusCodes = new();
+    private int _requestCount;
 
-    public int RequestCount => requestCount;
+    public int RequestCount => _requestCount;
 
     public TimeSpan ResponseDelay { get; set; }
 
     public void EnqueueTransientStatusCode(HttpStatusCode statusCode)
     {
-        transientStatusCodes.Enqueue(statusCode);
+        _transientStatusCodes.Enqueue(statusCode);
     }
 
     public void EnqueueStatusCode(HttpStatusCode statusCode)
     {
-        statusCodes.Enqueue(statusCode);
+        _statusCodes.Enqueue(statusCode);
     }
 
     protected override async Task<HttpResponseMessage> SendAsync(
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        Interlocked.Increment(ref requestCount);
+        Interlocked.Increment(ref _requestCount);
 
         if (ResponseDelay > TimeSpan.Zero)
         {
             await Task.Delay(ResponseDelay, cancellationToken);
         }
 
-        if (transientStatusCodes.TryDequeue(out var transientStatusCode))
+        if (_transientStatusCodes.TryDequeue(out var transientStatusCode))
         {
             return new HttpResponseMessage(transientStatusCode);
         }
 
-        if (statusCodes.TryDequeue(out var statusCode))
+        if (_statusCodes.TryDequeue(out var statusCode))
         {
             return new HttpResponseMessage(statusCode);
         }

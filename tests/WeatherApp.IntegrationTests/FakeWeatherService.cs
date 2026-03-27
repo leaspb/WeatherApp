@@ -1,7 +1,8 @@
+using WeatherApp.Api.Services.Weather;
+
 namespace WeatherApp.IntegrationTests;
 
-using WeatherApp.Api.Abstractions;
-using WeatherApp.Api.Contracts;
+using Api.Contracts;
 
 public sealed class FakeWeatherService : IWeatherService
 {

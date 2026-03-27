@@ -1,19 +1,16 @@
-namespace WeatherApp.Api.Services;
-
 using System.Globalization;
 using System.Net;
-using System.Net.Http.Json;
 using System.Text.Json;
 using Microsoft.Extensions.Caching.Memory;
-using WeatherApp.Api.Abstractions;
-using WeatherApp.Api.Configuration;
 using WeatherApp.Api.Contracts;
+
+namespace WeatherApp.Api.Services.Weather;
 
 public sealed class WeatherService(
     HttpClient httpClient,
     IMemoryCache memoryCache,
     WeatherApiCircuitBreaker circuitBreaker,
-    WeatherCacheRefreshCoordinator cacheRefreshCoordinator,
+    SemaphoreSlim refreshLock,
     WeatherApiOptions options) : IWeatherService
 {
     private const string WeatherCacheKey = "weather:moscow";
@@ -26,7 +23,7 @@ public sealed class WeatherService(
             return cachedWeather;
         }
 
-        await cacheRefreshCoordinator.RefreshLock.WaitAsync(cancellationToken);
+        await refreshLock.WaitAsync(cancellationToken);
 
         try
         {
@@ -69,7 +66,7 @@ public sealed class WeatherService(
         }
         finally
         {
-            cacheRefreshCoordinator.RefreshLock.Release();
+            refreshLock.Release();
         }
     }
 

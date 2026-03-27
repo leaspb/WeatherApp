@@ -6,16 +6,16 @@ using System.Text;
 
 public sealed class ScriptedWeatherApiMessageHandler : HttpMessageHandler
 {
-    private readonly ConcurrentDictionary<string, ConcurrentQueue<Func<HttpResponseMessage>>> responses = new();
-    private int requestCount;
+    private readonly ConcurrentDictionary<string, ConcurrentQueue<Func<HttpResponseMessage>>> _responses = new();
+    private int _requestCount;
 
-    public int RequestCount => requestCount;
+    public int RequestCount => _requestCount;
 
     public TimeSpan ResponseDelay { get; set; }
 
     public void EnqueueJsonResponse(string path, string json)
     {
-        var queue = responses.GetOrAdd(path, static _ => new ConcurrentQueue<Func<HttpResponseMessage>>());
+        var queue = _responses.GetOrAdd(path, static _ => new ConcurrentQueue<Func<HttpResponseMessage>>());
         queue.Enqueue(
             () => new HttpResponseMessage(HttpStatusCode.OK)
             {
@@ -25,7 +25,7 @@ public sealed class ScriptedWeatherApiMessageHandler : HttpMessageHandler
 
     public void EnqueueStatusCode(string path, HttpStatusCode statusCode)
     {
-        var queue = responses.GetOrAdd(path, static _ => new ConcurrentQueue<Func<HttpResponseMessage>>());
+        var queue = _responses.GetOrAdd(path, static _ => new ConcurrentQueue<Func<HttpResponseMessage>>());
         queue.Enqueue(() => new HttpResponseMessage(statusCode));
     }
 
@@ -33,7 +33,7 @@ public sealed class ScriptedWeatherApiMessageHandler : HttpMessageHandler
         HttpRequestMessage request,
         CancellationToken cancellationToken)
     {
-        Interlocked.Increment(ref requestCount);
+        Interlocked.Increment(ref _requestCount);
 
         if (ResponseDelay > TimeSpan.Zero)
         {
@@ -42,7 +42,7 @@ public sealed class ScriptedWeatherApiMessageHandler : HttpMessageHandler
 
         var path = request.RequestUri?.AbsolutePath ?? string.Empty;
 
-        if (responses.TryGetValue(path, out var queue) && queue.TryDequeue(out var factory))
+        if (_responses.TryGetValue(path, out var queue) && queue.TryDequeue(out var factory))
         {
             return factory();
         }

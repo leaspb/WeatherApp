@@ -1,8 +1,7 @@
 using System.Net;
 using System.Text.Json;
-using WeatherApp.Api.Abstractions;
-using WeatherApp.Api.DependencyInjection;
 using WeatherApp.Api.Services;
+using WeatherApp.Api.Services.Weather;
 
 var builder = WebApplication.CreateBuilder(args);
 

@@ -1,4 +1,4 @@
-namespace WeatherApp.Api.Configuration;
+namespace WeatherApp.Api.Services.Weather;
 
 public sealed class WeatherApiOptions
 {

@@ -1,9 +1,10 @@
+using WeatherApp.Api.Services.Weather;
+
 namespace WeatherApp.IntegrationTests;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
-using WeatherApp.Api.Abstractions;
 
 public sealed class WeatherAppApiFactory : WebApplicationFactory<Program>
 {

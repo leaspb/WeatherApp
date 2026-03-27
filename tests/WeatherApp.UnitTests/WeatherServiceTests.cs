@@ -1,9 +1,9 @@
+using WeatherApp.Api.Services.Weather;
+
 namespace WeatherApp.UnitTests;
 
 using System.Net;
 using Microsoft.Extensions.Caching.Memory;
-using WeatherApp.Api.Configuration;
-using WeatherApp.Api.Services;
 
 public sealed class WeatherServiceTests
 {
@@ -128,7 +128,7 @@ public sealed class WeatherServiceTests
             new HttpClient(handler) { BaseAddress = new Uri("http://localhost") },
             new MemoryCache(new MemoryCacheOptions()),
             new WeatherApiCircuitBreaker(),
-            new WeatherCacheRefreshCoordinator(),
+            new SemaphoreSlim(1, 1),
             options);
     }
 }

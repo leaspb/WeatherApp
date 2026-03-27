@@ -1,6 +1,6 @@
-namespace WeatherApp.UnitTests;
+using WeatherApp.Api.Services.Weather;
 
-using WeatherApp.Api.Services;
+namespace WeatherApp.UnitTests;
 
 public sealed class WeatherApiCircuitBreakerTests
 {

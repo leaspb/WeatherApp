@@ -1,6 +1,6 @@
-namespace WeatherApp.Api.Abstractions;
-
 using WeatherApp.Api.Contracts;
+
+namespace WeatherApp.Api.Services.Weather;
 
 public interface IWeatherService
 {

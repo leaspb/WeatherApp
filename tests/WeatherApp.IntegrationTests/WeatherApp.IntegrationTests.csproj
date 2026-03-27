@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\src\backend\WeatherApp.Api\WeatherApp.Api.csproj" />
+    <ProjectReference Include="..\..\src\WeatherApp.Api\WeatherApp.Api.csproj" />
   </ItemGroup>
 
 </Project>
