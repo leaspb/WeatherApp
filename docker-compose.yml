@@ -1,0 +1,15 @@
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: src/WeatherApp.Api/Dockerfile
+    ports:
+      - "5184:80"
+
+  frontend:
+    build:
+      context: src/WeatherApp.Web
+    ports:
+      - "4173:80"
+    depends_on:
+      - backend
