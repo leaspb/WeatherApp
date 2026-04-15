@@ -129,27 +129,40 @@ public sealed class WeatherService(
         using (currentDocument)
         using (forecastDocument)
         {
-            var currentRoot = currentDocument.RootElement;
-            var forecastRoot = forecastDocument.RootElement;
+            try
+            {
+                var currentRoot = currentDocument.RootElement;
+                var forecastRoot = forecastDocument.RootElement;
 
-            var location = currentRoot.GetProperty("location");
-            var current = currentRoot.GetProperty("current");
-            var forecastDays = forecastRoot
-                .GetProperty("forecast")
-                .GetProperty("forecastday");
+                var location = currentRoot.GetProperty("location");
+                var current = currentRoot.GetProperty("current");
+                var forecastDays = forecastRoot
+                    .GetProperty("forecast")
+                    .GetProperty("forecastday");
 
-            var localTime = ParseDateTimeOffset(location.GetProperty("localtime").GetString());
+                var localTime = ParseDateTimeOffset(location.GetProperty("localtime").GetString());
 
-            return new WeatherResponse(
-                new WeatherLocationResponse(
-                    location.GetProperty("name").GetString() ?? "Moscow",
-                    localTime),
-                new CurrentWeatherResponse(
-                    GetDecimal(current, "temp_c"),
-                    current.GetProperty("condition").GetProperty("text").GetString() ?? string.Empty,
-                    NormalizeIconUrl(current.GetProperty("condition").GetProperty("icon").GetString())),
-                MapHourly(forecastDays, localTime),
-                MapDaily(forecastDays));
+                return new WeatherResponse(
+                    new WeatherLocationResponse(
+                        location.GetProperty("name").GetString() ?? "Moscow",
+                        localTime),
+                    new CurrentWeatherResponse(
+                        GetDecimal(current, "temp_c"),
+                        current.GetProperty("condition").GetProperty("text").GetString() ?? string.Empty,
+                        NormalizeIconUrl(current.GetProperty("condition").GetProperty("icon").GetString())),
+                    MapHourly(forecastDays, localTime),
+                    MapDaily(forecastDays));
+            }
+            catch (Exception exception) when (
+                exception is FormatException
+                or InvalidOperationException
+                or KeyNotFoundException
+                or JsonException)
+            {
+                throw new WeatherProviderPayloadException(
+                    "Weather provider returned an unexpected payload.",
+                    exception);
+            }
         }
     }
 

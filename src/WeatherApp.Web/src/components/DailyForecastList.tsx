@@ -1,4 +1,5 @@
 import { formatDayLabel, formatTemperature } from "../lib/formatters";
+import { WeatherIcon } from "./WeatherIcon";
 import type { DailyForecast } from "../lib/types";
 
 interface DailyForecastListProps {
@@ -20,7 +21,7 @@ export function DailyForecastList({ items }: DailyForecastListProps) {
               <span className="day-condition">{item.conditionText}</span>
             </div>
             <div className="day-meta">
-              <img alt={item.conditionText} className="weather-icon" src={item.iconUrl} />
+              <WeatherIcon alt={item.conditionText} className="weather-icon" src={item.iconUrl} />
               <span className="day-range">
                 {formatTemperature(item.maxTemperatureC)} / {formatTemperature(item.minTemperatureC)}
               </span>

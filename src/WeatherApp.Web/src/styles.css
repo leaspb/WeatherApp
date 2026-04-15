@@ -27,6 +27,16 @@ button {
   font: inherit;
 }
 
+button:disabled {
+  cursor: wait;
+  opacity: 0.72;
+}
+
+button:focus-visible {
+  outline: 3px solid rgba(48, 105, 214, 0.38);
+  outline-offset: 3px;
+}
+
 #root {
   min-height: 100vh;
 }
@@ -185,6 +195,11 @@ button {
   transform: translateY(-1px);
 }
 
+.ghost-button:disabled:hover,
+.retry-button:disabled:hover {
+  transform: none;
+}
+
 .panel {
   padding: 1.2rem;
   border-radius: 1.7rem;
@@ -241,6 +256,12 @@ button {
 .weather-icon {
   width: 2.5rem;
   height: 2.5rem;
+}
+
+.weather-icon-fallback {
+  display: inline-block;
+  border-radius: 999px;
+  background: rgba(23, 32, 51, 0.08);
 }
 
 .daily-list {
@@ -334,6 +355,17 @@ button {
 @keyframes shimmer {
   100% {
     transform: translateX(100%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
 

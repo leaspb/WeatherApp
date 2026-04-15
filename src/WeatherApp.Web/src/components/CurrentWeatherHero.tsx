@@ -1,12 +1,14 @@
 import { formatHeroTime, formatTemperature } from "../lib/formatters";
+import { WeatherIcon } from "./WeatherIcon";
 import type { WeatherResponse } from "../lib/types";
 
 interface CurrentWeatherHeroProps {
+  isRefreshing: boolean;
   weather: WeatherResponse;
   onRefresh: () => void;
 }
 
-export function CurrentWeatherHero({ weather, onRefresh }: CurrentWeatherHeroProps) {
+export function CurrentWeatherHero({ isRefreshing, weather, onRefresh }: CurrentWeatherHeroProps) {
   return (
     <section className="hero">
       <div className="hero-copy-wrap">
@@ -16,13 +18,17 @@ export function CurrentWeatherHero({ weather, onRefresh }: CurrentWeatherHeroPro
         <div className="hero-metrics">
           <span className="hero-temperature">{formatTemperature(weather.current.temperatureC)}</span>
           <div className="hero-condition-wrap">
-            <img alt={weather.current.conditionText} className="hero-icon" src={weather.current.iconUrl} />
+            <WeatherIcon
+              alt={weather.current.conditionText}
+              className="hero-icon"
+              src={weather.current.iconUrl}
+            />
             <span className="hero-condition">{weather.current.conditionText}</span>
           </div>
         </div>
       </div>
-      <button className="ghost-button" onClick={onRefresh} type="button">
-        Обновить
+      <button className="ghost-button" disabled={isRefreshing} onClick={onRefresh} type="button">
+        {isRefreshing ? "Обновляем..." : "Обновить"}
       </button>
     </section>
   );

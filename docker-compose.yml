@@ -3,6 +3,13 @@ services:
     build:
       context: .
       dockerfile: src/WeatherApp.Api/Dockerfile
+    environment:
+      WeatherApi__ApiKey: ${WEATHER_API_KEY}
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/api/health"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
     ports:
       - "5184:80"
 
@@ -12,4 +19,5 @@ services:
     ports:
       - "4173:80"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy

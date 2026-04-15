@@ -37,4 +37,14 @@ public sealed class WeatherApiEndpointTests : IClassFixture<WeatherAppApiFactory
         Assert.Single(payload.Hourly);
         Assert.Single(payload.Daily);
     }
+
+    [Fact]
+    public async Task SwaggerUi_IsAvailable()
+    {
+        using var client = _factory.CreateClient();
+
+        var response = await client.GetAsync("/swagger/index.html");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
 }

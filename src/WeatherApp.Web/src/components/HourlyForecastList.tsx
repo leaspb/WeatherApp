@@ -1,4 +1,5 @@
 import { formatHour, formatTemperature } from "../lib/formatters";
+import { WeatherIcon } from "./WeatherIcon";
 import type { HourlyForecast } from "../lib/types";
 
 interface HourlyForecastListProps {
@@ -16,7 +17,7 @@ export function HourlyForecastList({ items }: HourlyForecastListProps) {
         {items.map((item) => (
           <article className="hour-card" key={item.time}>
             <span className="hour-time">{formatHour(item.time)}</span>
-            <img alt={item.conditionText} className="weather-icon" src={item.iconUrl} />
+            <WeatherIcon alt={item.conditionText} className="weather-icon" src={item.iconUrl} />
             <strong className="hour-temperature">{formatTemperature(item.temperatureC)}</strong>
             <span className="hour-condition">{item.conditionText}</span>
           </article>
