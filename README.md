@@ -56,25 +56,6 @@ docker compose down
 docker compose logs -f
 ```
 
-## Как проверить приложение
-
-После `docker compose up --build`:
-
-1. Откройте `http://localhost:4173`.
-2. Убедитесь, что отображаются текущая погода, почасовой прогноз и прогноз на 3 дня.
-3. Проверьте `http://localhost:5184/swagger`.
-4. Проверьте health endpoint:
-
-```bash
-curl http://localhost:5184/api/health
-```
-
-5. Проверьте погодный endpoint:
-
-```bash
-curl http://localhost:5184/api/weather
-```
-
 ## Локальный запуск без Docker
 
 Backend:
